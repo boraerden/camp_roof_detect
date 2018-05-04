@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from glob import glob
 
+
 aug_imgs = glob('../../VAMdata2/images/CAR*.png')
 imgs = [img for img in aug_imgs if 'm90' not in img and 'p90' not in img]
 aug_msks = glob('../../VAMdata2/masks/CAR*.png')
