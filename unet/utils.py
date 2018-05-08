@@ -153,4 +153,4 @@ def check_size(eval_segm, gt_segm):
     h_g, w_g = segm_size(gt_segm)
 
     if (h_e != h_g) or (w_e != w_g):
-        raise ValueError('Uneuqal image and mask size')
+        raise ValueError('Unequal image and mask size')

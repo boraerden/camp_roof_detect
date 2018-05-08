@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 from glob import glob
 import time
 
-IMAGE_DIR_PATH = '../images_masks/images/'
-MASK_DIR_PATH = '../images_masks/masks/'
+IMAGE_DIR_PATH = '../data_folder_width_plus10/train/img/0/'
+MASK_DIR_PATH = '../data_folder_width_plus10/train/gt/0/'
+
 
 # Create list of paths for images and masks
 db_imgs = glob(IMAGE_DIR_PATH + '*.png')

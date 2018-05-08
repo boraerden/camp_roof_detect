@@ -24,9 +24,15 @@ from utils import VIS, mean_IU
 # configure args
 from opts import *
 from opts import dataset_mean, dataset_std # set them in opts
+import datetime
+
+now = datetime.datetime.now()
+
+# opt.checkpoint_path = opt.checkpoint_path +  now.isoformat()[:-7] + '/'
 
 # save and compute metrics
 vis = VIS(save_path=opt.checkpoint_path)
+
 
 # configuration session
 config = tf.ConfigProto()
@@ -68,6 +74,7 @@ if opt.load_from_checkpoint == '':
     for item in cf: 
         if 'event' in item: 
             os.remove(os.path.join(opt.checkpoint_path, item))
+
 # define summary for tensorboard
 tf.summary.scalar('cross_entropy_loss', cross_entropy_loss)
 tf.summary.scalar('learning_rate', learning_rate)
@@ -75,6 +82,9 @@ summary_merged = tf.summary.merge_all()
 # define saver
 train_writer = tf.summary.FileWriter(opt.checkpoint_path, sess.graph)
 saver = tf.train.Saver() # must be added in the end
+
+
+
 
 ''' Main '''
 tot_iter = opt.iter_epoch * opt.epoch
@@ -93,25 +103,27 @@ with sess.as_default():
     # debug
     start = global_step.eval()
     for it in range(start, tot_iter):
-        if it % opt.iter_epoch == 0 or it == start:
+        if it % 500 == 0 or it == start:
             
-            saver.save(sess, opt.checkpoint_path+'model', global_step=global_step)
+            saver.save(sess, opt.checkpoint_path+'model-', global_step=global_step)
             print ('save a checkpoint at '+ opt.checkpoint_path+'model-'+str(it))
-            print ('start testing {} samples...'.format(test_samples))
-            for ti in range(test_samples):
-                x_batch, y_batch = next(test_generator)
-                # tensorflow wants a different tensor order
-                feed_dict = {   
-                                img: x_batch,
-                                label: y_batch,
-                            }
-                loss, pred_logits = sess.run([cross_entropy_loss, pred], feed_dict=feed_dict)
-                pred_map_batch = np.argmax(pred_logits, axis=3)
-                # import pdb; pdb.set_trace()
-                for pred_map, y in zip(pred_map_batch, y_batch):
-                    score = vis.add_sample(pred_map, y)
-            vis.compute_scores(suffix=it)
+            
+            # print ('start testing {} samples...'.format(test_samples))
+            # for ti in range(test_samples):
+            #     x_batch, y_batch = next(test_generator)
+            #     # tensorflow wants a different tensor order
+            #     feed_dict = {   img: x_batch,
+            #                     label: y_batch,
+            #                 }
+
+            #     loss, pred_logits = sess.run([cross_entropy_loss, pred], feed_dict=feed_dict)
+            #     pred_map_batch = np.argmax(pred_logits, axis=3)
+
+            #     for pred_map, y in zip(pred_map_batch, y_batch):
+            #         score = vis.add_sample(pred_map, y)
+            # vis.compute_scores(suffix=it)
         
+
         x_batch, y_batch = next(train_generator)
         feed_dict = {   img: x_batch,
                         label: y_batch
