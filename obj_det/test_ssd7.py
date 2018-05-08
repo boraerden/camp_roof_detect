@@ -111,7 +111,7 @@ annotations_dir_val    = '../../data_folder_bboxes_plusminus5/annotations_val/'
 
 classes = ['background',
            'house']
-           
+
 train_dataset.parse_xml(images_dirs=[images_dir_train],
                   image_set_filenames=[image_set_filename_train],
                   annotations_dirs=[annotations_dir_train],
@@ -152,3 +152,72 @@ val_dataset_size   = val_dataset.get_dataset_size()
 
 print("Number of images in the training dataset:\t{:>6}".format(train_dataset_size))
 print("Number of images in the validation dataset:\t{:>6}".format(val_dataset_size))
+
+###############################################################
+
+
+# 3: Set the batch size.
+
+batch_size = 16
+
+# 4: Define the image processing chain.
+
+data_augmentation_chain = DataAugmentationConstantInputSize(random_brightness=(-48, 48, 0.5),
+                                                            random_contrast=(0.5, 1.8, 0.5),
+                                                            random_saturation=(0.5, 1.8, 0.5),
+                                                            random_hue=(18, 0.5),
+                                                            random_flip=0.5,
+                                                            random_translate=((0.03,0.5), (0.03,0.5), 0.5),
+                                                            random_scale=(0.5, 2.0, 0.5),
+                                                            n_trials_max=3,
+                                                            clip_boxes=True,
+                                                            overlap_criterion='area',
+                                                            bounds_box_filter=(0.3, 1.0),
+                                                            bounds_validator=(0.5, 1.0),
+                                                            n_boxes_min=1,
+                                                            background=(0,0,0))
+
+# 5: Instantiate an encoder that can encode ground truth labels into the format needed by the SSD loss function.
+
+# The encoder constructor needs the spatial dimensions of the model's predictor layers to create the anchor boxes.
+predictor_sizes = [model.get_layer('classes4').output_shape[1:3],
+                   model.get_layer('classes5').output_shape[1:3],
+                   model.get_layer('classes6').output_shape[1:3],
+                   model.get_layer('classes7').output_shape[1:3]]
+
+ssd_input_encoder = SSDInputEncoder(img_height=img_height,
+                                    img_width=img_width,
+                                    n_classes=n_classes,
+                                    predictor_sizes=predictor_sizes,
+                                    scales=scales,
+                                    aspect_ratios_global=aspect_ratios,
+                                    two_boxes_for_ar1=two_boxes_for_ar1,
+                                    steps=steps,
+                                    offsets=offsets,
+                                    clip_boxes=clip_boxes,
+                                    variances=variances,
+                                    matching_type='multi',
+                                    pos_iou_threshold=0.5,
+                                    neg_iou_limit=0.3,
+                                    normalize_coords=normalize_coords)
+
+# 6: Create the generator handles that will be passed to Keras' `fit_generator()` function.
+
+train_generator = train_dataset.generate(batch_size=batch_size,
+                                         shuffle=True,
+                                         transformations=[data_augmentation_chain],
+                                         label_encoder=ssd_input_encoder,
+                                         returns={'processed_images',
+                                                  'encoded_labels'},
+                                         keep_images_without_gt=False)
+
+val_generator = val_dataset.generate(batch_size=batch_size,
+                                     shuffle=False,
+                                     transformations=[],
+                                     label_encoder=ssd_input_encoder,
+                                     returns={'processed_images',
+                                              'encoded_labels'},
+                                     keep_images_without_gt=False)
+
+
+                                     
