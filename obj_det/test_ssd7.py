@@ -1,5 +1,7 @@
 import sys
 sys.path.insert(0, '../../ssd_keras')
+sys.path.insert(0, '../../ssd_keras/ssd_encoder_decoder')
+sys.path.insert(0, '../../ssd_keras/bouding_box_utils')
 sys.path.insert(0, '../../data_generator_object_detection_2d/')
 sys.path.insert(0, '../../data_generator_object_detection_2d/misc_utils')
 
@@ -18,6 +20,8 @@ from keras_layers.keras_layer_DecodeDetections import DecodeDetections
 from keras_layers.keras_layer_DecodeDetectionsFast import DecodeDetectionsFast
 
 
+from ssd_input_encoder import SSDInputEncoder
+from ssd_output_decoder import decode_detections, decode_detections_fast
 
 from object_detection_2d_data_generator import DataGenerator
 from object_detection_2d_misc_utils import apply_inverse_transforms
@@ -220,4 +224,4 @@ val_generator = val_dataset.generate(batch_size=batch_size,
                                      keep_images_without_gt=False)
 
 
-                                     
+
