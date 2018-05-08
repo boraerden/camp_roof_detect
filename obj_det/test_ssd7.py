@@ -225,3 +225,58 @@ val_generator = val_dataset.generate(batch_size=batch_size,
 
 
 
+
+# Define model callbacks.
+
+# TODO: Set the filepath under which you want to save the weights.
+model_checkpoint = ModelCheckpoint(filepath='ssd7_epoch-{epoch:02d}_loss-{loss:.4f}_val_loss-{val_loss:.4f}.h5',
+                                   monitor='val_loss',
+                                   verbose=1,
+                                   save_best_only=True,
+                                   save_weights_only=False,
+                                   mode='auto',
+                                   period=1)
+
+csv_logger = CSVLogger(filename='ssd7_training_log.csv',
+                       separator=',',
+                       append=True)
+
+early_stopping = EarlyStopping(monitor='val_loss',
+                               min_delta=0.0,
+                               patience=10,
+                               verbose=1)
+
+reduce_learning_rate = ReduceLROnPlateau(monitor='val_loss',
+                                         factor=0.2,
+                                         patience=8,
+                                         verbose=1,
+                                         epsilon=0.001,
+                                         cooldown=0,
+                                         min_lr=0.00001)
+
+callbacks = [model_checkpoint,
+             csv_logger,
+             early_stopping,
+             reduce_learning_rate]
+
+
+# TODO: Set the epochs to train for.
+# If you're resuming a previous training, set `initial_epoch` and `final_epoch` accordingly.
+initial_epoch   = 0
+final_epoch     = 20
+steps_per_epoch = 1000
+
+history = model.fit_generator(generator=train_generator,
+                              steps_per_epoch=steps_per_epoch,
+                              epochs=final_epoch,
+                              callbacks=callbacks,
+                              validation_data=val_generator,
+                              validation_steps=ceil(val_dataset_size/batch_size),
+                              initial_epoch=initial_epoch)
+
+
+
+plt.figure(figsize=(20,12))
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.legend(loc='upper right', prop={'size': 24});
