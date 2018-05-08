@@ -5,14 +5,44 @@ from glob import glob
 import time
 from pprint import pprint
 from pdb import set_trace as t
+import xml.etree.cElementTree as ET
+
 
 IMAGE_DIR_PATH = '../data_folder/train/img/0/'
 MASK_DIR_PATH = '../data_folder/train/gt/0/'
-XML_FOLDER = '../data_folder_bboxes_plusminus5/bboxes/'
+XML_FOLDER = '../data_folder_bboxes_plusminus5/annotations/'
 
 def write_xml(msk_path, boxes):
 	write_path = XML_FOLDER + msk_path.split('/')[-1][:-4] + '.xml'
-	
+
+
+	annotation = ET.Element("annotation")
+	folder = ET.SubElement(annotation, "folder").text = IMAGE_DIR_PATH
+	filename = ET.SubElement(annotation, "filename").text = msk_path.split('/')[-1]
+
+	size = ET.SubElement(annotation, "size")
+	width = ET.SubElement(size, "width").text = str(256)
+	height = ET.SubElement(size, "height").text = str(256)
+	depth = ET.SubElement(size, "depth").text = str(3)
+
+	segmented = ET.SubElement(annotation, "segmented").text = str(0)
+
+	for xmin, ymin, xmax, ymax in boxes:
+		object_ = ET.SubElement(annotation, "object")
+		name = ET.SubElement(object_, "name").text = 'house'
+		trun = ET.SubElement(object_, "truncated").text = str(0)
+		diff = ET.SubElement(object_, "difficult").text = str(0)
+
+		bndbox = ET.SubElement(object_, "bndbox")
+		xmin = ET.SubElement(bndbox, "xmin").text = str(xmin)
+		ymin = ET.SubElement(bndbox, "ymin").text = str(ymin)
+		xmax = ET.SubElement(bndbox, "xmax").text = str(xmax)
+		ymax = ET.SubElement(bndbox, "ymax").text = str(ymax)
+
+
+	tree = ET.ElementTree(annotation)
+	tree.write(write_path)
+
 	t()
 
 
