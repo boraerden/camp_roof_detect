@@ -12,6 +12,7 @@ from keras.models import load_model
 from math import ceil
 import numpy as np
 from matplotlib import pyplot as plt
+from pdb import set_trace as t
 
 from models.keras_ssd7 import build_model
 from keras_loss_function.keras_ssd_loss import SSDLoss
@@ -109,7 +110,7 @@ images_dir_train         = '../../data_folder/train/img/0/'
 image_set_filename_train = '../../data_folder_imagesets/imagesets_train.txt'
 annotations_dir_train    = '../../data_folder_bboxes_plusminus5/annotations_train/'
 
-images_dir_val         = '../../data_folder/train/val/0/'
+images_dir_val         = '../../data_folder/val/img/0/'
 image_set_filename_val = '../../data_folder_imagesets/imagesets_val.txt'
 annotations_dir_val    = '../../data_folder_bboxes_plusminus5/annotations_val/'
 
@@ -229,7 +230,7 @@ val_generator = val_dataset.generate(batch_size=batch_size,
 # Define model callbacks.
 
 # TODO: Set the filepath under which you want to save the weights.
-model_checkpoint = ModelCheckpoint(filepath='ssd7_epoch-{epoch:02d}_loss-{loss:.4f}_val_loss-{val_loss:.4f}.h5',
+model_checkpoint = ModelCheckpoint(filepath='../../ssd7_checkpoints/ssd7_epoch-{epoch:02d}_loss-{loss:.4f}_val_loss-{val_loss:.4f}.h5',
                                    monitor='val_loss',
                                    verbose=1,
                                    save_best_only=True,
@@ -263,7 +264,7 @@ callbacks = [model_checkpoint,
 # TODO: Set the epochs to train for.
 # If you're resuming a previous training, set `initial_epoch` and `final_epoch` accordingly.
 initial_epoch   = 0
-final_epoch     = 20
+final_epoch     = 100
 steps_per_epoch = 1000
 
 history = model.fit_generator(generator=train_generator,
@@ -276,7 +277,92 @@ history = model.fit_generator(generator=train_generator,
 
 
 
+# plt.figure(figsize=(20,12))
+# plt.plot(history.history['loss'], label='loss')
+# plt.plot(history.history['val_loss'], label='val_loss')
+# plt.legend(loc='upper right', prop={'size': 24})
+# plt.show()
+# t()
+
+
+
+###############################################################
+# TEST #
+
+
+# 1: Set the generator for the predictions.
+
+predict_generator = val_dataset.generate(batch_size=1,
+                                         shuffle=True,
+                                         transformations=[],
+                                         label_encoder=None,
+                                         returns={'processed_images',
+                                                  'processed_labels',
+                                                  'filenames'},
+                                         keep_images_without_gt=False)
+
+# 2: Generate samples
+
+batch_images, batch_labels, batch_filenames = next(predict_generator)
+
+i = 0 # Which batch item to look at
+
+print("Image:", batch_filenames[i])
+print()
+print("Ground truth boxes:\n")
+print(batch_labels[i])
+
+# 3: Make a prediction
+
+y_pred = model.predict(batch_images)
+
+# 4: Decode the raw prediction `y_pred`
+
+y_pred_decoded = decode_detections(y_pred,
+                                   confidence_thresh=0.5,
+                                   iou_threshold=0.45,
+                                   top_k=200,
+                                   normalize_coords=normalize_coords,
+                                   img_height=img_height,
+                                   img_width=img_width)
+
+np.set_printoptions(precision=2, suppress=True, linewidth=90)
+print("Predicted boxes:\n")
+print('   class   conf xmin   ymin   xmax   ymax')
+print(y_pred_decoded[i])
+
+# 5: Draw the predicted boxes onto the image
+
 plt.figure(figsize=(20,12))
-plt.plot(history.history['loss'], label='loss')
-plt.plot(history.history['val_loss'], label='val_loss')
-plt.legend(loc='upper right', prop={'size': 24});
+plt.imshow(batch_images[i])
+
+current_axis = plt.gca()
+
+colors = plt.cm.hsv(np.linspace(0, 1, n_classes+1)).tolist() # Set the colors for the bounding boxes
+classes = ['background', 'car', 'truck', 'pedestrian', 'bicyclist', 'light'] # Just so we can print class names onto the image instead of IDs
+
+# Draw the ground truth boxes in green (omit the label for more clarity)
+for box in batch_labels[i]:
+    xmin = box[1]
+    ymin = box[2]
+    xmax = box[3]
+    ymax = box[4]
+    label = '{}'.format(classes[int(box[0])])
+    current_axis.add_patch(plt.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, color='green', fill=False, linewidth=2))  
+    #current_axis.text(xmin, ymin, label, size='x-large', color='white', bbox={'facecolor':'green', 'alpha':1.0})
+
+# Draw the predicted boxes in blue
+for box in y_pred_decoded[i]:
+    xmin = box[-4]
+    ymin = box[-3]
+    xmax = box[-2]
+    ymax = box[-1]
+    color = colors[int(box[0])]
+    label = '{}: {:.2f}'.format(classes[int(box[0])], box[1])
+    current_axis.add_patch(plt.Rectangle((xmin, ymin), xmax-xmin, ymax-ymin, color=color, fill=False, linewidth=2))  
+    current_axis.text(xmin, ymin, label, size='x-large', color='white', bbox={'facecolor':color, 'alpha':1.0})
+
+
+plt.show()
+
+t()

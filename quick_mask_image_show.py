@@ -9,12 +9,8 @@ MASK_DIR_PATH = '../data_folder_width_plus10/train/gt/0/'
 
 
 # Create list of paths for images and masks
-db_imgs = glob(IMAGE_DIR_PATH + '*.png')
-db_msks = glob(MASK_DIR_PATH + '*.png')
-
-# Prune pre-augmented images and masks
-image_paths = [img for img in db_imgs if 'm90' not in img and 'p90' not in img]
-mask_paths = [msk for msk in db_msks if 'm90' not in msk and 'p90' not in msk]
+image_paths = glob(IMAGE_DIR_PATH + '*.png')
+mask_paths = glob(MASK_DIR_PATH + '*.png')
 
 for img, msk in zip(image_paths, mask_paths):
 	msk = np.asarray(Image.open(msk))
