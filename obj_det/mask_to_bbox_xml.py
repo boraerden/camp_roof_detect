@@ -6,11 +6,11 @@ import time
 from pprint import pprint
 from pdb import set_trace as t
 import xml.etree.cElementTree as ET
+from tqdm import tqdm
 
-
-IMAGE_DIR_PATH = '../data_folder/train/img/0/'
-MASK_DIR_PATH = '../data_folder/train/gt/0/'
-XML_FOLDER = '../data_folder_bboxes_plusminus5/annotations/'
+IMAGE_DIR_PATH = '../../data_folder/val/img/0/'
+MASK_DIR_PATH = '../../data_folder/val/gt/0/'
+XML_FOLDER = '../../data_folder_bboxes_plusminus5/annotations_val/'
 
 def write_xml(msk_path, boxes):
 	write_path = XML_FOLDER + msk_path.split('/')[-1][:-4] + '.xml'
@@ -30,6 +30,7 @@ def write_xml(msk_path, boxes):
 	for xmin, ymin, xmax, ymax in boxes:
 		object_ = ET.SubElement(annotation, "object")
 		name = ET.SubElement(object_, "name").text = 'house'
+		pose = ET.SubElement(object_, "pose").text = 'Unspecified'
 		trun = ET.SubElement(object_, "truncated").text = str(0)
 		diff = ET.SubElement(object_, "difficult").text = str(0)
 
@@ -43,8 +44,6 @@ def write_xml(msk_path, boxes):
 	tree = ET.ElementTree(annotation)
 	tree.write(write_path)
 
-	t()
-
 
 
 # Create list of paths for images and masks
@@ -57,7 +56,7 @@ mask_paths = [msk for msk in db_msks if 'm90' not in msk and 'p90' not in msk]
 
 	
 
-for img_path, msk_path in zip(image_paths, mask_paths):
+for img_path, msk_path in tqdm(zip(image_paths, mask_paths)):
 	msk = np.asarray(Image.open(msk_path))
 
 	width, height = msk.shape

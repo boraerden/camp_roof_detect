@@ -103,7 +103,7 @@ with sess.as_default():
     # debug
     start = global_step.eval()
     for it in range(start, tot_iter):
-        if it % 500 == 0 or it == start:
+        if it % 100 == 0 or it == start:
             
             saver.save(sess, opt.checkpoint_path+'model-', global_step=global_step)
             print ('save a checkpoint at '+ opt.checkpoint_path+'model-'+str(it))
