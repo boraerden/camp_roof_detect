@@ -13,7 +13,17 @@ def xml_to_csv(path):
         tree = ET.parse(xml_file)
         root = tree.getroot()
         for member in root.findall('object'):
-            value = (root.find('filename').text,
+
+
+
+            # have to fix because xmls were made when files were png
+            # so changing filename from png to jpg
+            filename = root.find('filename').text
+            if filename[-3:] == 'png':
+                new_filename = filename[:-3] + 'jpg'
+            # take this is out if not the case
+
+            value = (new_filename,
                      int(root.find('size')[0].text),
                      int(root.find('size')[1].text),
                      member[0].text,
