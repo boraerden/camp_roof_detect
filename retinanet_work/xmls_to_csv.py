@@ -18,7 +18,7 @@ def xml_to_csv(path):
             # so changing filename from png to jpg
             filename = root.find('filename').text
             if filename[-3:] == 'png':
-                new_filename = '~/data/images/' + filename[:-3] + 'jpg'
+                new_filename = 'images/' + filename[:-3] + 'jpg'
             # take this is out if not the case
 
             value = (new_filename,
@@ -31,7 +31,7 @@ def xml_to_csv(path):
             xml_list.append(value)
     xml_df = pd.DataFrame(xml_list)
     return xml_df
-    
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -40,8 +40,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     xml_df = xml_to_csv(args.xml_dir)
-    csv_write_path = os.path.join(args.csv_save_dir, args.xml_dir.split('/')[-2]+'.csv')
-    xml_df.to_csv(csv_write_path, index=None)
+    csv_write_path = os.path.join(args.csv_save_dir, 'annotations.csv')
+    xml_df.to_csv(csv_write_path, index=None, header=False)
     print('Successfully converted xmls to csv saved at ' + csv_write_path)
-
-
