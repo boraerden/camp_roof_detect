@@ -6,12 +6,10 @@ import os
 import time
 import shutil
 
-IMAGE_DIR_PATH = '../VAMdata2/images/'
-MASK_DIR_PATH = '../VAMdata2/masks/'
+IMAGE_DIR_PATH = '../new_imgs_mks/newimages/'
+MASK_DIR_PATH = '../new_imgs_mks/newmasks/'
 
-train_targ_dir = '../data_folder/train/'
-test_targ_dir = '../data_folder/test/'
-train_perc = 0.8
+targ_dir = '../new_and_old_images_masks/'
 
 # Create list of paths for images and masks
 db_imgs = glob(IMAGE_DIR_PATH + '*.png')
@@ -24,13 +22,7 @@ mask_paths = [msk for msk in db_msks if 'm90' not in msk and 'p90' not in msk]
 image_paths.sort()
 mask_paths.sort()
 
-
 for i in range(len(image_paths)):
-	if i < len(image_paths)*train_perc:
-		shutil.copy(image_paths[i], train_targ_dir+'img')
-		shutil.copy(mask_paths[i], train_targ_dir+'gt')
-
-	else:
-		shutil.copy(image_paths[i], test_targ_dir+'img')
-		shutil.copy(mask_paths[i], test_targ_dir+'gt')
+	shutil.copy(image_paths[i], targ_dir+'images')
+	shutil.copy(mask_paths[i], targ_dir+'masks')
 

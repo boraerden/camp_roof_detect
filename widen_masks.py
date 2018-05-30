@@ -7,14 +7,12 @@ import os
 from pdb import set_trace as t
 from time import sleep
 
-train_msk_dir = '../data_folder/train/gt/0/*.png'
-val_msk_dir = '../data_folder/val/gt/0/*.png'
+msk_dir = '../new_imgs_mks/newmasks/*.png'
 
-new_train_msk_dir = '../data_folder_width_plus10/train/gt/0/'
-new_val_msk_dir = '../data_folder_width_plus10/val/gt/0/'
+new_msk_dir = '../new_imgs_mks/newmasks_width_plus10/'
 
-os.makedirs(new_train_msk_dir)
-os.makedirs(new_val_msk_dir)
+if not os.path.isdir(new_msk_dir):
+	os.makedirs(new_msk_dir)
 
 
 def widen_mask(msk):
@@ -34,16 +32,14 @@ def widen_mask(msk):
 
 	return wider_msk
 
-
-msk_paths = glob(train_msk_dir)
-msk_paths.extend(glob(val_msk_dir))
+msk_paths = glob(msk_dir)
 
 for msk_path in tqdm(msk_paths):
 	
 	msk = np.asarray(Image.open(msk_path))
 	wider_msk_Image = Image.fromarray(widen_mask(msk))
 
-	new_path = msk_path[:14] + '_width_plus10' + msk_path[14:]
+	new_path = new_msk_dir + msk_path.split('/')[-1]
 	wider_msk_Image.save(new_path)
 
 

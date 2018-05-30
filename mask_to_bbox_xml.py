@@ -8,9 +8,9 @@ from pdb import set_trace as t
 import xml.etree.cElementTree as ET
 from tqdm import tqdm
 
-IMAGE_DIR_PATH = '../../data_folder/val/img/0/'
-MASK_DIR_PATH = '../../data_folder/val/gt/0/'
-XML_FOLDER = '../../data_folder_bboxes_plusminus5/annotations_val/'
+IMAGE_DIR_PATH = '../new_imgs_mks/newimages/'
+MASK_DIR_PATH = '../new_imgs_mks/newmasks/'
+XML_FOLDER = '../retinanet-data-1.5/xmls/'
 
 def write_xml(msk_path, boxes):
 	write_path = XML_FOLDER + msk_path.split('/')[-1][:-4] + '.xml'
